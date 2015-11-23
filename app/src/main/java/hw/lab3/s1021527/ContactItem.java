@@ -8,6 +8,7 @@ public class ContactItem {
     private String name = "";
     private String phoneNumber = "";
     private String email = "";
+    private String address ="";
     public ContactItem(){}
 
     public String getID(){
@@ -22,6 +23,9 @@ public class ContactItem {
     public String getPhoneNumber(){
         return phoneNumber;
     }
+    public String getAddress(){
+        return  address;
+    }
 
     public void setID(String str){
         ID = str;
@@ -34,5 +38,8 @@ public class ContactItem {
     }
     public void setPhoneNumber(String str){
         phoneNumber = str;
+    }
+    public void setAddress(String str){
+        address = str;
     }
 }
