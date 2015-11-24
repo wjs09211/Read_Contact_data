@@ -2,11 +2,14 @@ package hw.lab3.s1021527;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -20,6 +23,19 @@ import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import org.achartengine.ChartFactory;
+import org.achartengine.chart.BarChart;
+import org.achartengine.model.CategorySeries;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
+import org.achartengine.renderer.DefaultRenderer;
+import org.achartengine.renderer.SimpleSeriesRenderer;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -103,7 +119,12 @@ public class MainActivity extends AppCompatActivity
             contact.sortAddress();
             updataListView();
         }
-
+        else if( id == R.id.nav_circle){
+            openPieChart();
+        }
+        else if ( id == R.id.nav_bar_Chart){
+            openBarChart();
+        }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
@@ -143,6 +164,140 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
         return builder.create();
+    }
+    private void openPieChart() {
+        ArrayList<ContactItem> itmeList = contact.getItemlist();
+        // Pie Chart Section Names
+        ArrayList<String> firstName = new ArrayList<String>();
+        for( int i = 0 ; i < itmeList.size() ; i++ ){
+            if(!firstName.contains(itmeList.get(i).getName().charAt(0) + "")){
+                firstName.add(itmeList.get(i).getName().charAt(0) + "");
+            }
+        }
+
+        int [] nameConut = new int[firstName.size()];
+        for( int i = 0 ; i < itmeList.size() ; i++ ) {
+            for (int j = 0; j < firstName.size(); j++) {
+                if(itmeList.get(i).getName().charAt(0) == firstName.get(j).charAt(0)) {
+                    nameConut[j]++;
+                    break;
+                }
+            }
+        }
+        int all = 0;
+        for (int j = 0; j < firstName.size(); j++) {
+            all += nameConut[j];
+        }
+        // Pie Chart Section Names
+       /* String[] code = new String[] {
+                "Eclair & Older", "Froyo", "Gingerbread", "Honeycomb",
+                "IceCream Sandwich", "Jelly Bean"
+        };*/
+        // Pie Chart Section Value
+        double[] distribution = new double[firstName.size()] ;
+        for (int i = 0; i < firstName.size(); i++) {
+            distribution[i] = (double)nameConut[i] / all;
+        }
+        // Color of each Pie Chart Sections
+        int[] colors = new int[firstName.size()];
+        Random ran = new Random();
+        for( int i = 0 ; i < firstName.size() ; i++ ){
+            colors[i] = Color.rgb(ran.nextInt(256),ran.nextInt(256),ran.nextInt(256));
+        }
+        // Instantiating CategorySeries to plot Pie Chart
+        CategorySeries distributionSeries = new CategorySeries(" Android version distribution as on October 1, 2012");
+        for(int i=0 ;i < distribution.length;i++){
+            // Adding a slice with its values and name to the Pie Chart
+            distributionSeries.add(firstName.get(i), distribution[i]);
+        }
+
+        // Instantiating a renderer for the Pie Chart
+        DefaultRenderer defaultRenderer  = new DefaultRenderer();
+        for(int i = 0 ;i<distribution.length;i++){
+            SimpleSeriesRenderer seriesRenderer = new SimpleSeriesRenderer();
+            seriesRenderer.setColor(colors[i]);
+
+            seriesRenderer.setDisplayChartValues(true);
+            // Adding a renderer for a slice
+            defaultRenderer.addSeriesRenderer(seriesRenderer);
+        }
+
+        defaultRenderer.setChartTitle("Android version distribution as on October 1, 2012 ");
+        defaultRenderer.setChartTitleTextSize(30);
+        defaultRenderer.setLabelsTextSize(30);
+        defaultRenderer.setLegendTextSize(30);
+        defaultRenderer.setLabelsColor(Color.BLACK);
+        defaultRenderer.setZoomButtonsVisible(true);
+
+        // Creating an intent to plot bar chart using dataset and multipleRenderer
+        Intent intent = ChartFactory.getPieChartIntent(getBaseContext(), distributionSeries, defaultRenderer, "AChartEnginePieChartDemo");
+
+        // Start Activity
+        startActivity(intent);
+    }
+    private void openBarChart(){
+         String[] mMonth = new String[] {
+                "Jan", "Feb" , "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug" , "Sep", "Oct", "Nov", "Dec"
+        };
+        int[] x = { 0,1,2,3,4,5,6,7 };
+        int[] income = { 2000,2500,2700,3000,2800,3500,3700,3800};
+        int[] expense = {2200, 2700, 2900, 2800, 2600, 3000, 3300, 3400 };
+
+        // Creating an  XYSeries for Income
+        XYSeries incomeSeries = new XYSeries("Income");
+        // Creating an  XYSeries for Expense
+        XYSeries expenseSeries = new XYSeries("Expense");
+        // Adding data to Income and Expense Series
+        for(int i=0;i<x.length;i++){
+            incomeSeries.add(i,income[i]);
+            expenseSeries.add(i,expense[i]);
+        }
+
+        // Creating a dataset to hold each series
+        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+        // Adding Income Series to the dataset
+        dataset.addSeries(incomeSeries);
+        // Adding Expense Series to dataset
+        dataset.addSeries(expenseSeries);
+
+        // Creating XYSeriesRenderer to customize incomeSeries
+        XYSeriesRenderer incomeRenderer = new XYSeriesRenderer();
+        incomeRenderer.setColor(Color.rgb(130, 130, 230));
+        incomeRenderer.setFillPoints(true);
+        incomeRenderer.setLineWidth(2);
+        incomeRenderer.setDisplayChartValues(true);
+
+        // Creating XYSeriesRenderer to customize expenseSeries
+        XYSeriesRenderer expenseRenderer = new XYSeriesRenderer();
+        expenseRenderer.setColor(Color.rgb(220, 80, 80));
+        expenseRenderer.setFillPoints(true);
+        expenseRenderer.setLineWidth(2);
+        expenseRenderer.setDisplayChartValues(true);
+
+        // Creating a XYMultipleSeriesRenderer to customize the whole chart
+        XYMultipleSeriesRenderer multiRenderer = new XYMultipleSeriesRenderer();
+        multiRenderer.setXLabels(0);
+        multiRenderer.setChartTitle("Income vs Expense Chart");
+        multiRenderer.setXTitle("Year 2012");
+        multiRenderer.setYTitle("Amount in Dollars");
+        multiRenderer.setZoomButtonsVisible(true);
+        for(int i=0; i< x.length;i++){
+            multiRenderer.addXTextLabel(i, mMonth[i]);
+        }
+
+        // Adding incomeRenderer and expenseRenderer to multipleRenderer
+        // Note: The order of adding dataseries to dataset and renderers to multipleRenderer
+        // should be same
+        multiRenderer.addSeriesRenderer(incomeRenderer);
+        multiRenderer.addSeriesRenderer(expenseRenderer);
+
+        // Creating an intent to plot bar chart using dataset and multipleRenderer
+        Intent intent = ChartFactory.getBarChartIntent(getBaseContext(), dataset, multiRenderer, BarChart.Type.DEFAULT);
+
+        // Start Activity
+        startActivity(intent);
+
     }
     public void showToast(final String toast)   //把它寫成function  有些時候可以避免Bug 例如在thread裡使用他
     {

@@ -20,5 +20,13 @@
                 android:title="Search" />
         </menu>
     </item>
+    <item android:title="Chart">
+        <menu>
+            <item android:id="@+id/nav_circle"
+                android:title="Pie  Chart" />
+            <item android:id="@+id/nav_bar_Chart"
+                android:title="Bar Chart" />
+        </menu>
+    </item>
 
 </menu>
