@@ -236,61 +236,69 @@ public class MainActivity extends AppCompatActivity
         startActivity(intent);
     }
     private void openBarChart(){
-         String[] mMonth = new String[] {
-                "Jan", "Feb" , "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug" , "Sep", "Oct", "Nov", "Dec"
-        };
-        int[] x = { 0,1,2,3,4,5,6,7 };
-        int[] income = { 2000,2500,2700,3000,2800,3500,3700,3800};
-        int[] expense = {2200, 2700, 2900, 2800, 2600, 3000, 3300, 3400 };
+        ArrayList<ContactItem> itmeList = contact.getItemlist();
+        // Pie Chart Section Names
+        ArrayList<String> phoneHead = new ArrayList<String>();
+        for( int i = 0 ; i < itmeList.size() ; i++ ){
+            if(itmeList.get(i).getPhoneNumber().length() >= 4) {
+                if (!phoneHead.contains(itmeList.get(i).getPhoneNumber().substring(0, 4))) {
+                    Log.e("ddddddd", itmeList.get(i).getPhoneNumber().substring(0, 4));
+                    phoneHead.add(itmeList.get(i).getPhoneNumber().substring(0, 4));
+                }
+            }
+        }
+
+        int [] phoneConut = new int[phoneHead.size()];
+        for( int i = 0 ; i < itmeList.size() ; i++ ) {
+            for (int j = 0; j < phoneHead.size(); j++) {
+                if(itmeList.get(i).getPhoneNumber().length() >= 4) {
+                    if (itmeList.get(i).getPhoneNumber().substring(0, 4).equals(phoneHead.get(j).substring(0, 4))) {
+                        phoneConut[j]++;
+                        break;
+                    }
+                }
+            }
+        }
 
         // Creating an  XYSeries for Income
-        XYSeries incomeSeries = new XYSeries("Income");
-        // Creating an  XYSeries for Expense
-        XYSeries expenseSeries = new XYSeries("Expense");
+        XYSeries phoneSeries = new XYSeries("phone number");
         // Adding data to Income and Expense Series
-        for(int i=0;i<x.length;i++){
-            incomeSeries.add(i,income[i]);
-            expenseSeries.add(i,expense[i]);
+        for(int i = 0 ; i < phoneConut.length ; i++){
+            phoneSeries.add(i,phoneConut[i]);
         }
 
         // Creating a dataset to hold each series
         XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
         // Adding Income Series to the dataset
-        dataset.addSeries(incomeSeries);
-        // Adding Expense Series to dataset
-        dataset.addSeries(expenseSeries);
+        dataset.addSeries(phoneSeries);
 
         // Creating XYSeriesRenderer to customize incomeSeries
-        XYSeriesRenderer incomeRenderer = new XYSeriesRenderer();
-        incomeRenderer.setColor(Color.rgb(130, 130, 230));
-        incomeRenderer.setFillPoints(true);
-        incomeRenderer.setLineWidth(2);
-        incomeRenderer.setDisplayChartValues(true);
-
-        // Creating XYSeriesRenderer to customize expenseSeries
-        XYSeriesRenderer expenseRenderer = new XYSeriesRenderer();
-        expenseRenderer.setColor(Color.rgb(220, 80, 80));
-        expenseRenderer.setFillPoints(true);
-        expenseRenderer.setLineWidth(2);
-        expenseRenderer.setDisplayChartValues(true);
+        XYSeriesRenderer phoneRenderer = new XYSeriesRenderer();
+        phoneRenderer.setColor(Color.rgb(130, 130, 230));
+        phoneRenderer.setFillPoints(true);
+        phoneRenderer.setLineWidth(5);
+        phoneRenderer.setDisplayChartValues(true);
 
         // Creating a XYMultipleSeriesRenderer to customize the whole chart
         XYMultipleSeriesRenderer multiRenderer = new XYMultipleSeriesRenderer();
         multiRenderer.setXLabels(0);
-        multiRenderer.setChartTitle("Income vs Expense Chart");
-        multiRenderer.setXTitle("Year 2012");
-        multiRenderer.setYTitle("Amount in Dollars");
+        multiRenderer.setChartTitle("長條圖");
+        multiRenderer.setXTitle("區碼");
+        multiRenderer.setAxisTitleTextSize(30);
+        multiRenderer.setLegendTextSize(30);
+        multiRenderer.setLabelsTextSize(20);
+        multiRenderer.setPointSize(30);
+        multiRenderer.setChartTitleTextSize(30);
+        multiRenderer.setYTitle("個數");
         multiRenderer.setZoomButtonsVisible(true);
-        for(int i=0; i< x.length;i++){
-            multiRenderer.addXTextLabel(i, mMonth[i]);
+        for(int i = 0; i < phoneHead.size() ; i++){
+            multiRenderer.addXTextLabel(i, phoneHead.get(i));
         }
 
         // Adding incomeRenderer and expenseRenderer to multipleRenderer
         // Note: The order of adding dataseries to dataset and renderers to multipleRenderer
         // should be same
-        multiRenderer.addSeriesRenderer(incomeRenderer);
-        multiRenderer.addSeriesRenderer(expenseRenderer);
+        multiRenderer.addSeriesRenderer(phoneRenderer);
 
         // Creating an intent to plot bar chart using dataset and multipleRenderer
         Intent intent = ChartFactory.getBarChartIntent(getBaseContext(), dataset, multiRenderer, BarChart.Type.DEFAULT);
