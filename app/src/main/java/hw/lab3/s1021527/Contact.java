@@ -85,6 +85,20 @@ public class Contact {
                     return a.getEmail().compareTo(b.getEmail());
                 else if (mode == 3)
                     return a.getAddress().compareTo(b.getAddress());
+                else if (mode == 4)
+                    return a.getName().charAt(0) - b.getName().charAt(0);
+                else if (mode == 5){
+                    if (a.getName().charAt(0) == b.getName().charAt(0))
+                        return a.getAddress().compareTo(b.getAddress());
+                    else
+                        return 0;
+                }
+                else if (mode == 6){
+                    return b.getTimes() - a.getTimes();
+                }
+                else if (mode == 7){
+                    return b.getDuration() - a.getDuration();
+                }
                 else
                     return a.getName().compareTo(b.getName());
             }
@@ -105,6 +119,10 @@ public class Contact {
             }
         }
         sort(3);
+    }
+    public void sortNameEmail(){
+        sort(4);
+        sort(5);
     }
     public ArrayList<ContactItem> getItemlist()
     {

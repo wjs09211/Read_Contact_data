@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
 
-    <item android:title="Order">
+    <item android:title="Order By">
         <menu>
             <item android:id="@+id/nav_name"
                 android:title="Name" />
@@ -12,12 +12,18 @@
                 android:title="Email" />
             <item android:id="@+id/nav_EmailAdr"
                 android:title="Email Address" />
+            <item android:id="@+id/nav_NameEmail"
+                android:title="First Name And Email" />
         </menu>
     </item>
     <item android:title="Search">
         <menu>
             <item android:id="@+id/nav_search" android:icon="@android:drawable/ic_menu_send"
                 android:title="Search" />
+            <item android:id="@+id/nav_count" android:icon="@android:drawable/ic_menu_send"
+                android:title="通話次數" />
+            <item android:id="@+id/nav_time" android:icon="@android:drawable/ic_menu_send"
+                android:title="通話時間" />
         </menu>
     </item>
     <item android:title="Chart">

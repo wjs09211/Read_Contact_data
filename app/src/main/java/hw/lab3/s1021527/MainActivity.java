@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.achartengine.ChartFactory;
@@ -39,8 +42,9 @@ import java.util.Random;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
-
+    private TextView text_load;
     private Contact contact;
+    private boolean lock = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,13 +60,38 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+        text_load = (TextView) findViewById(R.id.text_load);
         contact = new Contact(getApplicationContext());
-        int time = contact.query("","","");
-        showToast("query time: "+time+"ms");
-        updataListView();
+        this.query("", "", "");
         //listView.setOnItemClickListener(this);
     }
-
+    public void query( final String qName, final String qPhonenumber, final String qEmail)
+    {
+        text_load.setVisibility(View.VISIBLE);
+        new Thread() {
+            @Override
+            public void run() {     //使用網路相關的功能要用thread android 4.0以上都要這樣，為了安全性
+                lock = false;
+                int time = contact.query(qName,qPhonenumber,qEmail);
+                showToast("query time: "+time+"ms");
+                Message msgg = new Message();//component要交給Handler處理
+                msgg.what = 1;
+                mHandler.sendMessage(msgg);
+                lock = true;
+            }
+        }.start();
+    }
+    public Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msgg) {
+            switch(msgg.what){
+                case 1:
+                    updataListView();//更新listView
+                    break;
+            }
+            super.handleMessage(msgg);
+        }
+    };
     @Override
     public void onBackPressed() {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -100,30 +129,45 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
-
-        if (id == R.id.nav_search) {
-            Dialog d = onCreateDialogAddGroup();
-            d.show();
-        } else if (id == R.id.nav_name) {
-            contact.sort(0);
-            updataListView();
-        } else if (id == R.id.nav_Phone) {
-            contact.sort(1);
-            updataListView();
+        if( lock ) {
+            if (id == R.id.nav_search) {
+                Dialog d = onCreateDialogAddGroup();
+                d.show();
+            } else if (id == R.id.nav_name) {
+                contact.sort(0);
+                updataListView();
+            } else if (id == R.id.nav_Phone) {
+                contact.sort(1);
+                updataListView();
+            } else if (id == R.id.nav_Email) {
+                contact.sort(2);
+                updataListView();
+            } else if (id == R.id.nav_EmailAdr) {
+                contact.sortAddress();
+                updataListView();
+            } else if (id == R.id.nav_NameEmail) {
+                contact.sortNameEmail();
+                updataListView();
+            } else if (id == R.id.nav_circle) {
+                openPieChart();
+            } else if (id == R.id.nav_bar_Chart) {
+                openBarChart();
+            }
         }
-        else if (id == R.id.nav_Email) {
-            contact.sort(2);
-            updataListView();
-        }
-        else if (id == R.id.nav_EmailAdr) {
-            contact.sortAddress();
-            updataListView();
-        }
-        else if( id == R.id.nav_circle){
-            openPieChart();
-        }
-        else if ( id == R.id.nav_bar_Chart){
-            openBarChart();
+        if (id == R.id.nav_count) {
+            Intent intent = new Intent();
+            intent.setClass(this, Main2Activity.class);
+            Bundle bundle = new Bundle();
+            bundle.putInt("mode", 1);
+            intent.putExtras(bundle);
+            startActivity(intent);
+        } else if (id == R.id.nav_time) {
+            Intent intent = new Intent();
+            intent.setClass(this, Main2Activity.class);
+            Bundle bundle = new Bundle();
+            bundle.putInt("mode", 2);
+            intent.putExtras(bundle);
+            startActivity(intent);
         }
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -134,6 +178,7 @@ public class MainActivity extends AppCompatActivity
         listView = (ListView) findViewById(R.id.listView);
         MyAdapter adapter = new MyAdapter(this, contact.getItemlist());
         listView.setAdapter(adapter);
+        text_load.setVisibility(View.GONE);
     }
     public Dialog onCreateDialogAddGroup() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -154,9 +199,7 @@ public class MainActivity extends AppCompatActivity
                         // sign in the user ...
                         //String s = AddGroup.getText().toString();
                         //feedMenu.addSubMenu(AddGroup.getEditableText().toString());
-                        int time = contact.query(search_name.getText().toString(), search_phone.getText().toString(), search_email.getText().toString());
-                        showToast("query time: "+time+"ms");
-                        updataListView();
+                        query(search_name.getText().toString(), search_phone.getText().toString(), search_email.getText().toString());
                     }
                 })
                 .setNegativeButton("取消", new DialogInterface.OnClickListener() {

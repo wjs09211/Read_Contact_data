@@ -9,6 +9,8 @@ public class ContactItem {
     private String phoneNumber = "";
     private String email = "";
     private String address ="";
+    private int times = 0;
+    private int duration = 0;
     public ContactItem(){}
 
     public String getID(){
@@ -26,6 +28,12 @@ public class ContactItem {
     public String getAddress(){
         return  address;
     }
+    public int getTimes(){
+        return times;
+    }
+    public int getDuration(){
+        return duration;
+    }
 
     public void setID(String str){
         ID = str;
@@ -41,5 +49,11 @@ public class ContactItem {
     }
     public void setAddress(String str){
         address = str;
+    }
+    public void addTimes(){
+        times++;
+    }
+    public void addduration(int a){
+        duration += a;
     }
 }
